@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -75,6 +76,74 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessMove> moves = new ArrayList<>();
+
+        if (this.pieceType == PieceType.ROOK) {
+            int row = myPosition.getRow();
+            int col = myPosition.getColumn();
+
+            int moveUp = row + 1;
+            while (moveUp <= 8) {
+                ChessPiece pieceAtSquare = board.getPiece(new ChessPosition(moveUp, col));
+                if (pieceAtSquare == null) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(moveUp, col), null));
+                } else if (pieceAtSquare.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(moveUp, col), null));
+                    break;
+                } else {
+                    break;
+                }
+
+                moveUp++;
+            }
+
+
+            int moveDown = row - 1;
+            while (moveDown >= 1) {
+                ChessPiece pieceAtSquare = board.getPiece(new ChessPosition(moveDown, col));
+                if (pieceAtSquare == null) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(moveDown, col), null));
+                } else if (pieceAtSquare.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(moveDown, col), null));
+                    break;
+                } else {
+                    break;
+                }
+
+                moveDown--;
+            }
+
+            int moveRight = col + 1;
+            while (moveRight <= 8) {
+                ChessPiece pieceAtSquare = board.getPiece(new ChessPosition(row, moveRight));
+                if (pieceAtSquare == null) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(row, moveRight), null));
+                } else if (pieceAtSquare.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(row, moveRight), null));
+                    break;
+                } else {
+                    break;
+                }
+
+                moveRight++;
+            }
+
+            int moveLeft = col - 1;
+            while (moveLeft >= 1) {
+                ChessPiece pieceAtSquare = board.getPiece(new ChessPosition(row, moveLeft));
+                if (pieceAtSquare == null) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(row, moveLeft), null));
+                } else if (pieceAtSquare.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(row, moveLeft), null));
+                    break;
+                } else {
+                    break;
+                }
+
+                moveLeft--;
+            }
+        }
+        return moves;
+
     }
 }
