@@ -17,15 +17,13 @@ public class ChessPiece {
         if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        if (!super.equals(object)) {
-            return false;
-        }
+
         ChessPiece that = (ChessPiece) object;
         return pieceColor == that.pieceColor && pieceType == that.pieceType;
     }
 
     public int hashCode() {
-        return java.util.Objects.hash(super.hashCode(), pieceColor, pieceType);
+        return java.util.Objects.hash(pieceColor, pieceType);
     }
 
     @java.lang.Override
