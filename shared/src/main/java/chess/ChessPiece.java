@@ -384,7 +384,7 @@ public class ChessPiece {
                 int checkCol2 = col - 1;
 
                 if (checkRow2 >= 1 && checkRow2 <= 8 && checkCol2 >= 1 && checkCol2 <= 8){
-                    chess.ChessPiece pieceAtSquare = board.getPiece(new ChessPosition(checkRow2, checkCol2));
+                    ChessPiece pieceAtSquare = board.getPiece(new ChessPosition(checkRow2, checkCol2));
                     if (pieceAtSquare == null){
                         moves.add(new ChessMove(myPosition, new ChessPosition(checkRow2, checkCol2), null));
                     } else if (pieceAtSquare.getTeamColor() != this.getTeamColor()){
@@ -673,3 +673,23 @@ public class ChessPiece {
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
