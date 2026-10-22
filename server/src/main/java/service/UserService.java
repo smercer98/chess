@@ -18,22 +18,36 @@ public class UserService {
     }
 
     public RegisterResult register(RegisterRequest req) throws DataAccessException, BadRequestException, AlreadyTakenException {
-        if (req.username() == null || req.password() == null || req.email() == null) {
+        if (req.username() == null) {
             throw new BadRequestException("Error: bad request");
         }
-        if (userDAO.getUser(req.username()) != null) {
+        if (req.password() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+        if (req.email() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+
+        UserData existing = userDAO.getUser(req.username());
+        if (existing != null) {
             throw new AlreadyTakenException("Error: already taken");
         }
-        UserData newUser = new UserData(req.username(), req.password(), req.email());
-        userDAO.createUser(newUser);
 
-        String authToken = UUID.randomUUID().toString();
-        authDAO.createAuth(new AuthData(authToken, req.username()));
+        UserData u = new UserData(req.username(), req.password(), req.email());
+        userDAO.createUser(u);
 
-        return new RegisterResult(req.username(), authToken);
+        String token = UUID.randomUUID().toString();
+        AuthData authData = new AuthData(token, req.username());
+        authDAO.createAuth(authData);
+
+        RegisterResult result = new RegisterResult(req.username(), token);
+        return result;
     }
 
-    public LoginResult login(LoginRequest req) throws DataAccessException, UnauthorizedException {
+    public LoginResult login(LoginRequest req) throws DataAccessException, UnauthorizedException, BadRequestException {
+        if (req.username() == null || req.password() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
         UserData user = userDAO.getUser(req.username());
         if (user == null || !user.password().equals(req.password())) {
             throw new UnauthorizedException("Error: unauthorized");
