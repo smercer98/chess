@@ -57,7 +57,8 @@ public class GameService {
         if (req.playerColor().equals("BLACK") && game.blackUsername() != null) {
             throw new AlreadyTakenException("Error: already taken");
         }
-
+// GameData is a record (immutable), so we build a new one with the
+// updated username rather than modifying the existing game object
         GameData updatedGame;
         if (req.playerColor().equals("WHITE")) {
             updatedGame = new GameData(game.gameID(), auth.username(), game.blackUsername(), game.gameName(), game.game());
