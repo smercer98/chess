@@ -1,12 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import io.javalin.*;
 import service.*;
 
@@ -22,7 +17,12 @@ public class Server {
     private final GameService gameService = new GameService(gameDAO, authDAO);
     private final Gson gson = new Gson();
 
-    public Server() {
+    public Server()  {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("failed to create database", e);
+        }
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
         javalin.delete("/db", ctx -> {
