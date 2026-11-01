@@ -4,22 +4,27 @@ import com.google.gson.Gson;
 import dataaccess.*;
 import io.javalin.*;
 import service.*;
+import dataaccess.sql.*;
 
 import java.util.Map;
 
 public class Server {
-
     private final Javalin javalin;
-    private final UserDAO userDAO = new MemoryUserDAO();
-    private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
-    private final UserService userService = new UserService(userDAO, authDAO);
-    private final GameService gameService = new GameService(gameDAO, authDAO);
+    private final UserDAO userDAO;
+    private final AuthDAO authDAO;
+    private final GameDAO gameDAO;
+    private final UserService userService;
+    private final GameService gameService;
     private final Gson gson = new Gson();
 
-    public Server()  {
+    public Server() {
         try {
             DatabaseManager.createDatabase();
+            userDAO = new MySQLUserDAO();
+            authDAO = new MySQLAuthDAO();
+            gameDAO = new MySQLGameDAO();
+            userService = new UserService(userDAO, authDAO);
+            gameService = new GameService(gameDAO, authDAO);
         } catch (DataAccessException e) {
             throw new RuntimeException("failed to create database", e);
         }
