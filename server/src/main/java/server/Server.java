@@ -31,12 +31,18 @@ public class Server {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
         javalin.delete("/db", ctx -> {
-            userDAO.clear();
-            authDAO.clear();
-            gameDAO.clear();
-            ctx.status(200);
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(Map.of()));
+            try {
+                userDAO.clear();
+                authDAO.clear();
+                gameDAO.clear();
+                ctx.status(200);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(Map.of()));
+            } catch (Exception e) {
+                ctx.status(500);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
+            }
         });
 
         javalin.post("/user", ctx -> {
