@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+
+import service.LoginRequest;
 import service.RegisterRequest;
 
 
@@ -24,6 +26,19 @@ public class ServerFacade {
         var request = new RegisterRequest(username, password, email);
         return makeRequest("POST", path, request, AuthData.class);
     }
+
+    public AuthData login(String username, String password) throws Exception {
+        var path = "/session";
+        var request = new LoginRequest(username, password);
+        return makeRequest("POST", path, request, AuthData.class);
+    }
+
+    public void logout(String authToken) throws Exception {
+        var path = "/session";
+        makeRequest("DELETE", path, null, null);
+    }
+
+
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws Exception {
         URL url = (new URI(serverUrl + path)).toURL();
