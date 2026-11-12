@@ -10,8 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 
-import service.LoginRequest;
-import service.RegisterRequest;
+import service.*;
 
 
 public class ServerFacade {
@@ -38,6 +37,23 @@ public class ServerFacade {
         makeRequest("DELETE", path, null, authToken, null);
     }
 
+    public CreateGameResult createGame(String gameName, String authToken) throws Exception {
+        var path = "/game";
+        var request = new CreateGameRequest(authToken, gameName);
+        return makeRequest("POST", path, request, authToken, CreateGameResult.class);
+    }
+
+    public ListGamesResult listGames(String authToken) throws Exception {
+        var path = "/game";
+        return makeRequest("GET", path, null, authToken, ListGamesResult.class);
+    }
+
+    public void joinGame(int gameID, String playerColor, String authToken) throws Exception {
+        var path = "/game";
+        var request = new JoinGameRequest(authToken, playerColor, gameID);
+        makeRequest("PUT", path, request, authToken, null);
+    }
+
 
 
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {
@@ -51,9 +67,11 @@ public class ServerFacade {
             http.addRequestProperty("authorization", authToken);
         }
 
-        String reqData = new Gson().toJson(request);
-        try (OutputStream reqBody = http.getOutputStream()) {
-            reqBody.write(reqData.getBytes());
+        if (request != null) {
+            String reqData = new Gson().toJson(request);
+            try (OutputStream reqBody = http.getOutputStream()) {
+                reqBody.write(reqData.getBytes());
+            }
         }
 
         http.connect();
@@ -63,6 +81,7 @@ public class ServerFacade {
 
         T response = new Gson().fromJson(reader, responseClass);
         return response;
+
 
 
     }
