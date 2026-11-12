@@ -54,7 +54,10 @@ public class ServerFacade {
         makeRequest("PUT", path, request, authToken, null);
     }
 
-
+    public void clear() throws Exception {
+        var path = "/db";
+        makeRequest("DELETE", path, null, null, null);
+    }
 
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {
         URL url = (new URI(serverUrl + path)).toURL();
@@ -79,8 +82,11 @@ public class ServerFacade {
         InputStream respBody = http.getInputStream();
         InputStreamReader reader = new InputStreamReader(respBody);
 
-        T response = new Gson().fromJson(reader, responseClass);
-        return response;
+        if (responseClass != null) {
+            T response = new Gson().fromJson(reader, responseClass);
+            return response;
+        }
+        return null;
 
 
 
