@@ -3,6 +3,8 @@ package client;
 import org.junit.jupiter.api.*;
 import server.Server;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class ServerFacadeTests {
 
@@ -25,7 +27,43 @@ public class ServerFacadeTests {
 
     @Test
     public void sampleTest() {
-        Assertions.assertTrue(true);
+        assertTrue(true);
+    }
+
+    @Test
+    public void registerSuccess() throws Exception {
+        var authData = facade.register("player1", "password", "p1@email.com");
+        assertTrue(authData.authToken().length() > 10);
+    }
+
+    @Test
+    public void registerDuplicateFails() throws Exception {
+        facade.register("player1", "password", "p1@email.com");
+        assertThrows(Exception.class, () -> facade.register("player1", "password", "p1@email.com"));
+    }
+
+    @Test
+    public void loginSuccess() throws Exception {
+        facade.register("player1", "password", "p1@email.com");
+        var authData = facade.login("player1", "password");
+        assertTrue(authData.authToken().length() > 10);
+    }
+
+    @Test
+    public void loginWrongPasswordFails() throws Exception {
+        facade.register("player1", "password", "p1@email.com");
+        assertThrows(Exception.class, () -> facade.login("player1", "wrongpassword"));
+    }
+
+    @Test
+    public void logoutSuccess() throws Exception {
+        var authData = facade.register("player1", "password", "p1@email.com");
+        assertDoesNotThrow(() -> facade.logout(authData.authToken()));
+    }
+
+    @Test
+    public void logoutInvalidTokenFails() {
+        assertThrows(Exception.class, () -> facade.logout("invalid-token"));
     }
 
     @BeforeEach
