@@ -66,6 +66,18 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.logout("invalid-token"));
     }
 
+    @Test
+    public void createGameSuccess() throws Exception {
+        var authData = facade.register("player1", "password", "p1@email.com");
+        var result = facade.createGame("myGame", authData.authToken());
+        assertTrue(result.gameID() > 0);
+    }
+
+    @Test
+    public void createGameInvalidAuthFails() {
+        assertThrows(Exception.class, () -> facade.createGame("myGame", "invalid-token"));
+    }
+
     @BeforeEach
     public void setup() throws Exception {
         facade.clear();
