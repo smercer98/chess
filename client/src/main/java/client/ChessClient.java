@@ -1,11 +1,15 @@
 package client;
 
 import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
+import model.GameData;
 
 public class ChessClient {
     private final ServerFacade server;
     private String authToken = null;
     private State state = State.PRELOGIN;
+    private List<GameData> lastListedGames = new ArrayList<>();
 
     private enum State {
         PRELOGIN, POSTLOGIN
@@ -42,6 +46,7 @@ public class ChessClient {
             case "create" -> create(tokens);
             case "list" -> list();
             case "join" -> join(tokens);
+            case "observe" -> observe(tokens);
             case "quit" -> "quit";
             default -> help();
         };
@@ -84,20 +89,44 @@ public class ChessClient {
 
     private String list() throws Exception {
         var result = server.listGames(authToken);
-        var sb = new StringBuilder();
-        for (var game : result.games()) {
-            sb.append(game.gameID()).append(": ").append(game.gameName()).append("\n");
+        lastListedGames = new ArrayList<>(result.games());
+        if (lastListedGames.isEmpty()) {
+            return "No games yet";
         }
-        return sb.length() == 0 ? "No games yet" : sb.toString();
+        var sb = new StringBuilder();
+        for (int i = 0; i < lastListedGames.size(); i++) {
+            var game = lastListedGames.get(i);
+            var white = game.whiteUsername() != null ? game.whiteUsername() : "none";
+            var black = game.blackUsername() != null ? game.blackUsername() : "none";
+            sb.append(i + 1).append(": ").append(game.gameName())
+                    .append(" (white: ").append(white).append(", black: ").append(black).append(")\n");
+        }
+        return sb.toString();
     }
 
     private String join(String[] tokens) throws Exception {
         if (tokens.length != 3) {
-            return "Expected: join <gameID> <WHITE|BLACK>";
+            return "Expected: join <list number> <WHITE|BLACK>";
         }
-        var gameID = Integer.parseInt(tokens[1]);
+        var listNumber = Integer.parseInt(tokens[1]);
+        if (listNumber < 1 || listNumber > lastListedGames.size()) {
+            return "Invalid game number. Run 'list' first to see available games.";
+        }
+        var gameID = lastListedGames.get(listNumber - 1).gameID();
         server.joinGame(gameID, tokens[2].toUpperCase(), authToken);
-        return "Joined game " + gameID + " as " + tokens[2].toUpperCase();
+        return "Joined game " + listNumber + " as " + tokens[2].toUpperCase();
+    }
+
+    private String observe(String[] tokens) throws Exception {
+        if (tokens.length != 2) {
+            return "Expected: observe <list number>";
+        }
+        var listNumber = Integer.parseInt(tokens[1]);
+        if (listNumber < 1 || listNumber > lastListedGames.size()) {
+            return "Invalid game number. Run 'list' first to see available games.";
+        }
+        var game = lastListedGames.get(listNumber - 1);
+        return "Observing game " + listNumber + " (\"" + game.gameName() + "\")";
     }
 
     private String help() {
@@ -112,7 +141,8 @@ public class ChessClient {
         return """
             create <gameName> - create a game
             list - list games
-            join <gameID> <WHITE|BLACK> - join a game
+            join <list number> <WHITE|BLACK> - join a game
+            observe <list number> - observe a game
             logout - log out
             quit - exit the program
             help - show this message
