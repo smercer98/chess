@@ -3,12 +3,14 @@ package client;
 import com.google.gson.Gson;
 import model.AuthData;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Map;
 
 import service.*;
 
@@ -16,7 +18,7 @@ import service.*;
 public class ServerFacade {
     private final String serverUrl;
 
-    public ServerFacade(int port){
+    public ServerFacade(int port) {
         serverUrl = "http://localhost:" + port;
     }
 
@@ -29,7 +31,7 @@ public class ServerFacade {
     public AuthData login(String username, String password) throws Exception {
         var path = "/session";
         var request = new LoginRequest(username, password);
-        return makeRequest("POST", path, request,null, AuthData.class);
+        return makeRequest("POST", path, request, null, AuthData.class);
     }
 
     public void logout(String authToken) throws Exception {
@@ -79,6 +81,10 @@ public class ServerFacade {
 
         http.connect();
 
+        if (http.getResponseCode() != 200) {
+            throw new Exception(getErrorMessage(http));
+        }
+
         InputStream respBody = http.getInputStream();
         InputStreamReader reader = new InputStreamReader(respBody);
 
@@ -87,8 +93,19 @@ public class ServerFacade {
             return response;
         }
         return null;
-
-
-
     }
+
+    private String getErrorMessage(HttpURLConnection http) throws IOException {
+        try (InputStream errorStream = http.getErrorStream()) {
+            if (errorStream != null) {
+                var reader = new InputStreamReader(errorStream);
+                var errorResponse = new Gson().fromJson(reader, Map.class);
+                if (errorResponse != null && errorResponse.containsKey("message")) {
+                    return errorResponse.get("message").toString();
+                }
+            }
+        }
+        return "Request failed with status " + http.getResponseCode();
+    }
+
 }
