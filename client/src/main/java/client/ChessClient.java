@@ -112,7 +112,12 @@ public class ChessClient {
         if (tokens.length != 3) {
             return "Expected: join <list number> <WHITE|BLACK>";
         }
-        var listNumber = Integer.parseInt(tokens[1]);
+        int listNumber;
+        try {
+            listNumber = Integer.parseInt(tokens[1]);
+        } catch (NumberFormatException e) {
+            return "List number must be a number.";
+        }
         if (listNumber < 1 || listNumber > lastListedGames.size()) {
             return "Invalid game number. Run 'list' first to see available games.";
         }
@@ -134,7 +139,12 @@ public class ChessClient {
         if (tokens.length != 2) {
             return "Expected: observe <list number>";
         }
-        var listNumber = Integer.parseInt(tokens[1]);
+        int listNumber;
+        try {
+            listNumber = Integer.parseInt(tokens[1]);
+        } catch (NumberFormatException e) {
+            return "List number must be a number.";
+        }
         if (listNumber < 1 || listNumber > lastListedGames.size()) {
             return "Invalid game number. Run 'list' first to see available games.";
         }
