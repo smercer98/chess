@@ -3,7 +3,11 @@ package client;
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
+
+import chess.ChessBoard;
+import chess.ChessGame;
 import model.GameData;
+import ui.BoardPrinter;
 
 public class ChessClient {
     private final ServerFacade server;
@@ -112,9 +116,18 @@ public class ChessClient {
         if (listNumber < 1 || listNumber > lastListedGames.size()) {
             return "Invalid game number. Run 'list' first to see available games.";
         }
+        ChessGame.TeamColor color;
+        try {
+            color = ChessGame.TeamColor.valueOf(tokens[2].toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return "Color must be WHITE or BLACK.";
+        }
         var gameID = lastListedGames.get(listNumber - 1).gameID();
-        server.joinGame(gameID, tokens[2].toUpperCase(), authToken);
-        return "Joined game " + listNumber + " as " + tokens[2].toUpperCase();
+        server.joinGame(gameID, color.toString(), authToken);
+
+        var board = new ChessBoard();
+        board.resetBoard();
+        return "Joined game " + listNumber + " as " + color + "\n" + BoardPrinter.boardToString(board, color);
     }
 
     private String observe(String[] tokens) throws Exception {
@@ -126,7 +139,11 @@ public class ChessClient {
             return "Invalid game number. Run 'list' first to see available games.";
         }
         var game = lastListedGames.get(listNumber - 1);
-        return "Observing game " + listNumber + " (\"" + game.gameName() + "\")";
+
+        var board = new ChessBoard();
+        board.resetBoard();
+        return "Observing game " + listNumber + " (\"" + game.gameName() + "\")\n"
+                + BoardPrinter.boardToString(board, ChessGame.TeamColor.WHITE);
     }
 
     private String help() {
