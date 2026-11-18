@@ -38,6 +38,10 @@ public class ChessClient {
         return switch (cmd) {
             case "login" -> login(tokens);
             case "register" -> register(tokens);
+            case "logout" -> logout();
+            case "create" -> create(tokens);
+            case "list" -> list();
+            case "join" -> join(tokens);
             case "quit" -> "quit";
             default -> help();
         };
@@ -63,6 +67,39 @@ public class ChessClient {
         return "Registered and logged in as " + tokens[1];
     }
 
+    private String logout() throws Exception {
+        server.logout(authToken);
+        authToken = null;
+        state = State.PRELOGIN;
+        return "Logged out";
+    }
+
+    private String create(String[] tokens) throws Exception {
+        if (tokens.length != 2) {
+            return "Expected: create <gameName>";
+        }
+        var result = server.createGame(tokens[1], authToken);
+        return "Created game \"" + tokens[1] + "\" (id " + result.gameID() + ")";
+    }
+
+    private String list() throws Exception {
+        var result = server.listGames(authToken);
+        var sb = new StringBuilder();
+        for (var game : result.games()) {
+            sb.append(game.gameID()).append(": ").append(game.gameName()).append("\n");
+        }
+        return sb.length() == 0 ? "No games yet" : sb.toString();
+    }
+
+    private String join(String[] tokens) throws Exception {
+        if (tokens.length != 3) {
+            return "Expected: join <gameID> <WHITE|BLACK>";
+        }
+        var gameID = Integer.parseInt(tokens[1]);
+        server.joinGame(gameID, tokens[2].toUpperCase(), authToken);
+        return "Joined game " + gameID + " as " + tokens[2].toUpperCase();
+    }
+
     private String help() {
         if (state == State.PRELOGIN) {
             return """
@@ -72,6 +109,13 @@ public class ChessClient {
                 help - show this message
                 """;
         }
-        return "logged in - postlogin commands not built yet";
+        return """
+            create <gameName> - create a game
+            list - list games
+            join <gameID> <WHITE|BLACK> - join a game
+            logout - log out
+            quit - exit the program
+            help - show this message
+            """;
     }
 }
